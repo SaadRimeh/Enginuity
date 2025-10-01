@@ -1,4 +1,4 @@
-# Backend — XcodeFullStack
+# Backend — Enginuity
 
 A concise, production-oriented README for the backend API powering the Admin Dashboard and app.
 
