@@ -6,10 +6,11 @@ dotenv.config();
 
 
   cloudinary.config({
-  cloud_name: "ddxm3akvr",
-  api_key:827411214515378,
-  api_secret:"8r2-A51tsB_UjVhG9xTtb4zYRiw",
+  cloud_name: ENV.CLOUDINARY_CLOUD_NAME,
+  api_key:ENV.CLOUDINARY_API_KEY,
+  api_secret:ENV.CLOUDINARY_API_SECRET,
 });
+  
   
 
 
