@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Dashboard</title>
+  <style>
+    :root{
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --accent:#10b981;
+      --danger:#ef4444;
+      --glass: rgba(255,255,255,0.6);
+      --shadow: 0 6px 18px rgba(20,20,40,0.08);
+      --radius:12px;
+      --max-width:1200px;
+      --sidebar-w:260px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(180deg, #f6f8fb 0%, #f0f4f8 100%);
+      color:#0f172a;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:24px;
+      display:flex;
+      justify-content:center;
+    }
+    .app{
+      width:100%;
+      max-width:var(--max-width);
+      display:grid;
+      grid-template-columns: var(--sidebar-w) 1fr;
+      gap:20px;
+    }
+
+    /* Sidebar */
+    .sidebar{
+      background:var(--card);
+      border-radius:var(--radius);
+      padding:18px;
+      box-shadow:var(--shadow);
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      min-height:400px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .logo{
+      width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#34d399,#10b981);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;
+    }
+    .nav{margin-top:12px; display:flex;flex-direction:column; gap:8px;}
+    .nav a{
+      text-decoration:none;color:var(--muted);padding:10px;border-radius:10px;display:flex;align-items:center;gap:10px;
+    }
+    .nav a.active, .nav a:hover{background:#f3f6f8;color:#0f172a}
+
+    /* Main */
+    .main{
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+    }
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .search{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      background:var(--card);
+      padding:8px;border-radius:12px;box-shadow:var(--shadow);
+    }
+    input.search-input{border:0;outline:none;background:transparent;padding:6px 8px;width:320px}
+
+    /* Cards */
+    .cards{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:14px;
+    }
+    .card{
+      background:var(--card);
+      padding:16px;border-radius:14px;box-shadow:var(--shadow);
+      display:flex;flex-direction:column;gap:6px;
+    }
+    .card .label{color:var(--muted);font-size:13px}
+    .card .value{font-weight:700;font-size:20px}
+
+    /* Table area */
+    .panel{
+      background:var(--card);
+      padding:16px;border-radius:14px;box-shadow:var(--shadow);
+    }
+    .panel h3{margin:0 0 12px 0}
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th,td{padding:12px 10px;text-align:left;border-bottom:1px solid #eef2f7;vertical-align:top}
+    th{color:var(--muted);font-weight:600;font-size:13px}
+    td .small{color:var(--muted);font-size:13px}
+    .badge{display:inline-block;padding:6px 8px;border-radius:999px;background:#eefcf6;color:#065f46;font-weight:600;font-size:12px}
+
+    .actions{display:flex;gap:8px}
+    button.btn{padding:8px 10px;border-radius:10px;border:0;cursor:pointer;font-weight:600}
+    .btn-danger{background:var(--danger);color:white}
+    .btn-primary{background:var(--accent);color:white}
+    .btn-ghost{background:transparent;border:1px solid #e6eef6;color:var(--muted)}
+
+    /* Modal */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(10,12,20,0.45);display:none;align-items:center;justify-content:center;z-index:60}
+    .modal{background:var(--card);padding:18px;border-radius:12px;min-width:320px;max-width:420px;box-shadow:0 20px 40px rgba(20,20,40,0.2)}
+    .modal h4{margin:0 0 10px 0}
+    .form-row{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+    input[type="number"], textarea{padding:10px;border-radius:8px;border:1px solid #e6eef6;font-size:14px;min-width:0}
+    .modal .row{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+
+    /* Loading */
+    .spinner{width:20px;height:20px;border-radius:50%;border:3px solid #e6eef6;border-top-color:var(--accent);animation:spin 1s linear infinite;display:inline-block}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* Toast */
+    .toasts{position:fixed;right:20px;bottom:20px;display:flex;flex-direction:column;gap:10px;z-index:9999}
+    .toast{background:#0f172a;color:white;padding:10px 12px;border-radius:8px;box-shadow:var(--shadow);min-width:200px}
+
+    /* Responsive */
+    @media (max-width:1000px){
+      .cards{grid-template-columns:repeat(2,1fr)}
+      .app{grid-template-columns:1fr}
+      .sidebar{order:2}
+    }
+    @media (max-width:560px){
+      input.search-input{width:140px}
+      .cards{grid-template-columns:repeat(1,1fr)}
+      th,td{padding:10px 6px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app" role="application" aria-label="Admin dashboard">
+    <aside class="sidebar" aria-label="Sidebar">
+      <div class="brand">
+        <div class="logo">AD</div>
+        <div>
+          <div style="font-weight:700">Admin Panel</div>
+          <div style="font-size:13px;color:var(--muted)">Moderation & Reports</div>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Main navigation">
+        <a href="#" class="active">Dashboard</a>
+        <a href="#">Users</a>
+        <a href="#">Posts</a>
+        <a href="#">Settings</a>
+      </nav>
+
+      <div style="margin-top:auto;color:var(--muted);font-size:13px">
+        Logged in as <strong>admin@example.com</strong>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div style="display:flex;gap:12px;align-items:center">
+          <h2 style="margin:0">Dashboard</h2>
+          <div id="loadingIndicator" style="display:none" title="Loading"><span class="spinner"></span></div>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center">
+          <div class="search" role="search" aria-label="Search posts">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 21l-4.35-4.35" stroke="#9aa4b2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="11" cy="11" r="6" stroke="#9aa4b2" stroke-width="1.5"/></svg>
+            <input class="search-input" id="q" placeholder="Search reported posts..." />
+          </div>
+          <button class="btn btn-ghost" id="refreshBtn">Refresh</button>
+        </div>
+      </div>
+
+      <section class="cards" aria-label="Summary cards">
+        <div class="card">
+          <div class="label">Users</div>
+          <div class="value" id="usersCount">—</div>
+        </div>
+        <div class="card">
+          <div class="label">Posts</div>
+          <div class="value" id="postsCount">—</div>
+        </div>
+        <div class="card">
+          <div class="label">Comments</div>
+          <div class="value" id="commentsCount">—</div>
+        </div>
+        <div class="card">
+          <div class="label">Notifications</div>
+          <div class="value" id="notificationsCount">—</div>
+        </div>
+      </section>
+
+      <section class="panel" aria-label="Reported posts">
+        <h3>Reported Posts</h3>
+        <div style="overflow:auto">
+          <table id="reportsTable" aria-describedby="Reported posts list">
+            <thead>
+              <tr>
+                <th>Post</th>
+                <th>Author</th>
+                <th>Reported by</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="reportsTbody">
+              <tr><td colspan="5" class="small">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- New: API Endpoints panel (dashboard related) -->
+      <section class="panel" aria-label="API Endpoints">
+        <h3>API Endpoints</h3>
+        <div style="overflow:auto">
+          <ul id="apiEndpoints" style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px">
+            <li class="small">Loading endpoints...</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-backdrop" id="banModalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal" role="document" aria-labelledby="banTitle">
+      <h4 id="banTitle">Ban user</h4>
+      <div class="form-row">
+        <label class="small">User</label>
+        <div id="banUserLabel" style="font-weight:700"></div>
+      </div>
+      <div class="form-row">
+        <label class="small">Duration (minutes)</label>
+        <input type="number" id="banMinutes" min="1" value="60"/>
+      </div>
+      <div class="form-row">
+        <label class="small">Reason (optional)</label>
+        <textarea id="banReason" rows="3" placeholder="Reason for ban"></textarea>
+      </div>
+
+      <div class="row">
+        <button class="btn btn-ghost" id="banCancel">Cancel</button>
+        <button class="btn btn-primary" id="banConfirm">Ban</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toasts -->
+  <div class="toasts" id="toasts"></div>
+
+  <script>
+  // Edit this to match your backend base (root API)
+  const API_BASE = 'http://localhost:5001/api';
+
+    // Render dashboard-related endpoints so they stay in sync with API_BASE
+    function renderApiEndpoints() {
+      const container = document.getElementById('apiEndpoints');
+      if (!container) return;
+
+      // Endpoints discovered from backend routes/controllers
+      const endpoints = [
+        { method: 'GET', path: '/users/dashboard', title: 'Dashboard summary', desc: 'Admin summary: counts and recent reported posts' },
+      ];
+
+      container.innerHTML = '';
+      for (const ep of endpoints) {
+        const li = document.createElement('li');
+        li.style.display = 'flex';
+        li.style.gap = '8px';
+        li.style.alignItems = 'center';
+
+        const txt = document.createElement('div');
+        txt.style.flex = '1';
+        const urlDisplay = escapeHtml(API_BASE + ep.path.replace(/:([a-zA-Z]+)/g, '{id}'));
+        txt.innerHTML = `<strong style="display:block"><span style=\"font-size:12px;padding:4px 8px;border-radius:6px;background:#eef2f6;color:#0f172a;margin-right:8px;display:inline-block;font-weight:700\">${escapeHtml(ep.method)}</span> ${escapeHtml(ep.title)}</strong><div class="small" style="color:var(--muted)">${escapeHtml(ep.desc)}<br>${urlDisplay}</div>`;
+
+        const openBtn = document.createElement('button');
+        openBtn.className = 'btn btn-ghost';
+        openBtn.textContent = 'Open';
+        openBtn.title = 'Open in new tab (GET endpoints or open URL placeholder)';
+        openBtn.addEventListener('click', () => {
+          const target = (API_BASE + ep.path).replace(':postId', 'SAMPLE_POST_ID').replace(':userId','SAMPLE_USER_ID').replace(':commentId','SAMPLE_COMMENT_ID').replace(':username','sampleuser').replace(/\?[^\s]*/,'');
+          window.open(target, '_blank');
+        });
+
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'btn btn-ghost';
+        copyBtn.textContent = 'Copy';
+        copyBtn.addEventListener('click', async () => {
+          try {
+            const text = `${ep.method} ${API_BASE}${ep.path}`;
+            await navigator.clipboard.writeText(text);
+            showToast('Endpoint copied');
+          } catch (err) {
+            showToast('Copy failed');
+          }
+        });
+
+        li.appendChild(txt);
+        li.appendChild(openBtn);
+        li.appendChild(copyBtn);
+        container.appendChild(li);
+      }
+    }
+
+    // Utility: toast
+    const toasts = document.getElementById('toasts');
+    function showToast(msg, timeout = 4000) {
+      const el = document.createElement('div');
+      el.className = 'toast';
+      el.textContent = msg;
+      toasts.appendChild(el);
+      setTimeout(()=> {
+        el.style.transform = 'translateY(6px)';
+        el.style.opacity = '0';
+        setTimeout(()=>el.remove(), 350);
+      }, timeout);
+    }
+
+    // Loading spinner
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    function setLoading(on){
+      loadingIndicator.style.display = on ? 'inline-block' : 'none';
+    }
+
+    // Data holders
+    let reportedPosts = [];
+    let filteredPosts = [];
+
+    // Elements
+    const usersCount = document.getElementById('usersCount');
+    const postsCount = document.getElementById('postsCount');
+    const commentsCount = document.getElementById('commentsCount');
+    const notificationsCount = document.getElementById('notificationsCount');
+    const reportsTbody = document.getElementById('reportsTbody');
+    const searchInput = document.getElementById('q');
+    const refreshBtn = document.getElementById('refreshBtn');
+
+    // Modal elements
+    const banModalBackdrop = document.getElementById('banModalBackdrop');
+    const banUserLabel = document.getElementById('banUserLabel');
+    const banMinutes = document.getElementById('banMinutes');
+    const banReason = document.getElementById('banReason');
+    const banCancel = document.getElementById('banCancel');
+    const banConfirm = document.getElementById('banConfirm');
+
+    let activeBanUserId = null;
+    let activeBanUserName = '';
+
+    // Fetch dashboard
+    async function fetchDashboard(){
+      setLoading(true);
+      try {
+  const res = await fetch(`${API_BASE}/users/dashboard`);
+        if(!res.ok) throw new Error('Failed fetching dashboard: ' + res.status);
+        const data = await res.json();
+
+        // Populate summary
+        usersCount.textContent = data.users ?? 0;
+        postsCount.textContent = data.posts ?? 0;
+        commentsCount.textContent = data.comments ?? 0;
+        notificationsCount.textContent = data.notifications ?? 0;
+
+        reportedPosts = Array.isArray(data.reportedPosts) ? data.reportedPosts : [];
+        // Normalize createdAt
+        reportedPosts = reportedPosts.map(p => ({ ...p, createdAt: p.createdAt ? new Date(p.createdAt) : null }));
+        filteredPosts = reportedPosts;
+        renderReportsTable(filteredPosts);
+      } catch (err) {
+        console.error(err);
+        showToast('Error loading dashboard: ' + (err.message || err));
+        reportsTbody.innerHTML = '<tr><td colspan="5" class="small">Failed to load reported posts.</td></tr>';
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // Render table
+    function renderReportsTable(list){
+      if (!list || list.length === 0) {
+        reportsTbody.innerHTML = '<tr><td colspan="5" class="small">No reported posts.</td></tr>';
+        return;
+      }
+      reportsTbody.innerHTML = '';
+      for (const post of list) {
+        const tr = document.createElement('tr');
+
+        // Post content & categories
+        const tdPost = document.createElement('td');
+        const content = document.createElement('div');
+        content.textContent = post.content ?? '(no content)';
+        content.style.marginBottom = '8px';
+        const meta = document.createElement('div');
+        meta.className = 'small';
+        meta.textContent = (post.type ? post.type + ' • ' : '') + (Array.isArray(post.categories) ? post.categories.join(', ') : '');
+        tdPost.appendChild(content);
+        tdPost.appendChild(meta);
+
+        // Author
+        const tdAuthor = document.createElement('td');
+        tdAuthor.innerHTML = `<div style="font-weight:700">${escapeHtml(post.user?.username ?? '—')}</div><div class="small">${escapeHtml(post.user?.email ?? '')}</div>`;
+
+        // Reported by
+        const tdReported = document.createElement('td');
+        if (Array.isArray(post.reports) && post.reports.length) {
+          const listEl = document.createElement('div');
+          const names = post.reports.map(r => r.user?.username ?? r.user?.email ?? 'Unknown');
+          listEl.textContent = names.join(', ');
+          tdReported.appendChild(listEl);
+          // optionally show one reason
+          const reasons = post.reports.map(r => r.reason).filter(Boolean);
+          if (reasons.length) {
+            const rline = document.createElement('div');
+            rline.className = 'small';
+            rline.style.marginTop = '6px';
+            rline.style.color = 'var(--muted)';
+            rline.textContent = 'Example reason: ' + reasons[0];
+            tdReported.appendChild(rline);
+          }
+        } else {
+          tdReported.textContent = '—';
+        }
+
+        // Created
+        const tdCreated = document.createElement('td');
+        tdCreated.textContent = post.createdAt ? timeAgo(post.createdAt) : '—';
+        tdCreated.className = 'small';
+
+        // Actions
+        const tdActions = document.createElement('td');
+        tdActions.className = 'actions';
+        // Delete post
+        const delBtn = document.createElement('button');
+        delBtn.className = 'btn btn-danger';
+        delBtn.textContent = 'Delete Post';
+        delBtn.addEventListener('click', ()=> handleDeletePost(post._id, delBtn));
+        // Ban user
+        const banBtn = document.createElement('button');
+        banBtn.className = 'btn btn-primary';
+        banBtn.textContent = 'Ban User';
+        banBtn.addEventListener('click', ()=> openBanModal(post.user?._id ?? post.user?._id ?? null, post.user?.username ?? post.user?.email ?? 'Unknown', banBtn));
+
+        tdActions.appendChild(delBtn);
+        tdActions.appendChild(banBtn);
+
+        tr.appendChild(tdPost);
+        tr.appendChild(tdAuthor);
+        tr.appendChild(tdReported);
+        tr.appendChild(tdCreated);
+        tr.appendChild(tdActions);
+
+        reportsTbody.appendChild(tr);
+      }
+    }
+
+    // Delete post
+    async function handleDeletePost(postId, btn){
+      if(!confirm('Delete this post permanently?')) return;
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Deleting...';
+      try {
+  const res = await fetch(`${API_BASE}/users/admin/posts/${encodeURIComponent(postId)}`, {
+          method: 'DELETE',
+          headers: {'Content-Type':'application/json'},
+        });
+        if (!res.ok) {
+          const errorText = await res.text().catch(()=>res.statusText);
+          throw new Error(errorText || 'Delete failed');
+        }
+        showToast('Post deleted');
+        // remove locally
+        reportedPosts = reportedPosts.filter(p => p._id !== postId);
+        filteredPosts = filteredPosts.filter(p => p._id !== postId);
+        renderReportsTable(filteredPosts);
+      } catch (err) {
+        console.error(err);
+        showToast('Failed to delete post: ' + (err.message||err));
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    }
+
+    // Modal
+    function openBanModal(userId, userLabel, triggerBtn){
+      if(!userId){
+        showToast('User id not available for this post.');
+        return;
+      }
+      activeBanUserId = userId;
+      activeBanUserName = userLabel;
+      banUserLabel.textContent = userLabel;
+      banMinutes.value = 60;
+      banReason.value = '';
+      banModalBackdrop.style.display = 'flex';
+      banModalBackdrop.setAttribute('aria-hidden','false');
+      banConfirm.disabled = false;
+      banConfirm.textContent = 'Ban';
+    }
+    function closeBanModal(){
+      banModalBackdrop.style.display = 'none';
+      banModalBackdrop.setAttribute('aria-hidden','true');
+      activeBanUserId = null;
+    }
+
+    banCancel.addEventListener('click', closeBanModal);
+    banModalBackdrop.addEventListener('click', (e)=> {
+      if (e.target === banModalBackdrop) closeBanModal();
+    });
+
+    banConfirm.addEventListener('click', async ()=>{
+      if (!activeBanUserId) return showToast('No user selected.');
+      const minutes = Number(banMinutes.value);
+      const reason = banReason.value.trim();
+      if (!minutes || minutes < 1) return showToast('Enter ban duration in minutes.');
+      banConfirm.disabled = true;
+      banConfirm.textContent = 'Banning...';
+      try {
+  const res = await fetch(`${API_BASE}/users/admin/users/${encodeURIComponent(activeBanUserId)}/ban`, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ minutes, reason }),
+        });
+        if (!res.ok){
+          const body = await res.text().catch(()=>null);
+          throw new Error(body || 'Ban failed');
+        }
+        showToast(`User ${activeBanUserName} banned for ${minutes} minutes`);
+        closeBanModal();
+      } catch (err) {
+        console.error(err);
+        showToast('Failed to ban user: ' + (err.message||err));
+      } finally {
+        banConfirm.disabled = false;
+        banConfirm.textContent = 'Ban';
+      }
+    });
+
+    // Refresh and search
+    refreshBtn.addEventListener('click', fetchDashboard);
+    searchInput.addEventListener('input', (e)=>{
+      const q = e.target.value.trim().toLowerCase();
+      if (!q) {
+        filteredPosts = reportedPosts;
+      } else {
+        filteredPosts = reportedPosts.filter(p => {
+          const s = (
+            (p.content || '') + ' ' +
+            (p.user?.username || '') + ' ' +
+            (p.user?.email || '') + ' ' +
+            (Array.isArray(p.reports) ? p.reports.map(r => r.user?.username + ' ' + (r.user?.email||'')).join(' ') : '')
+          ).toLowerCase();
+          return s.includes(q);
+        });
+      }
+      renderReportsTable(filteredPosts);
+    });
+
+    // Small helpers
+    function timeAgo(date){
+      const seconds = Math.floor((Date.now() - date.getTime())/1000);
+      if (seconds < 60) return `${seconds}s ago`;
+      const minutes = Math.floor(seconds/60);
+      if (minutes < 60) return `${minutes}m ago`;
+      const hours = Math.floor(minutes/60);
+      if (hours < 24) return `${hours}h ago`;
+      const days = Math.floor(hours/24);
+      if (days < 30) return `${days}d ago`;
+      return date.toLocaleDateString();
+    }
+
+    // Basic escaping for inner texts
+    function escapeHtml(str){
+      if(!str) return '';
+      return String(str).replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; });
+    }
+
+    // Init
+    (function init(){
+      fetchDashboard();
+      renderApiEndpoints();
+    })();
+  </script>
+</body>
+</html>
